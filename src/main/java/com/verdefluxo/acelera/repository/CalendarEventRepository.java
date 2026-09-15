@@ -2,6 +2,8 @@ package com.verdefluxo.acelera.repository;
 
 import com.verdefluxo.acelera.model.entity.CalendarEvent;
 import com.verdefluxo.acelera.model.entity.User;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.time.LocalDate;
@@ -12,6 +14,8 @@ public interface CalendarEventRepository extends JpaRepository<CalendarEvent, Lo
 
     List<CalendarEvent> findByUserAndDateBetweenOrderByDateAscStartTimeAsc(
             User user, LocalDate from, LocalDate to);
+
+    Page<CalendarEvent> findByUserOrderByDateDescStartTimeDesc(User user, Pageable pageable);
 
     Optional<CalendarEvent> findByGoogleEventIdAndUser(String googleEventId, User user);
 

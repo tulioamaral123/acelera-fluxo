@@ -17,6 +17,9 @@ import org.springframework.web.reactive.function.client.WebClient;
 import org.springframework.web.reactive.function.client.WebClientResponseException;
 import com.verdefluxo.acelera.model.dto.GoogleTokenResponse;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.OffsetDateTime;
@@ -63,6 +66,15 @@ public class GoogleCalendarService {
     public List<CalendarEventDTO> forceSync(LocalDate weekStart, LocalDate weekEnd) {
         User user = getCurrentUser();
         return syncFromGoogle(user, weekStart, weekEnd);
+    }
+
+    @Transactional(readOnly = true)
+    public Page<CalendarEventDTO> listAll(int page, int size) {
+        int clampedSize = Math.min(Math.max(size, 1), 100);
+        User user = getCurrentUser();
+        return calendarEventRepository
+                .findByUserOrderByDateDescStartTimeDesc(user, PageRequest.of(page, clampedSize))
+                .map(this::toDTO);
     }
 
     // -------------------------------------------------------------------------
