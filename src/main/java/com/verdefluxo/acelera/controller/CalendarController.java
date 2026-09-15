@@ -23,4 +23,11 @@ public class CalendarController {
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate to) {
         return ResponseEntity.ok(calendarService.getEventsForWeek(from, to));
     }
+
+    @PostMapping("/sync")
+    public ResponseEntity<List<CalendarEventDTO>> forceSync(
+            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate from,
+            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate to) {
+        return ResponseEntity.ok(calendarService.forceSync(from, to));
+    }
 }
