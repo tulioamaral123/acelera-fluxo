@@ -1,0 +1,36 @@
+spring:
+  datasource:
+    url: jdbc:postgresql://localhost:5433/acelera_fluxo
+    username: postgres
+    password:
+    driver-class-name: org.postgresql.Driver
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: false
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+        format_sql: true
+
+server:
+  port: 8080
+
+logging:
+  level:
+    com.verdefluxo.acelera.security: DEBUG
+
+jwt:
+  secret: 404E635266556A586E3272357538782F413F4428472B4B6250645367566B5970
+  expiration: 2592000000
+
+app:
+  cors:
+    allowed-origins: http://localhost:4200
+
+google:
+  oauth:
+    client-id: 641927464220-vnl21puqkogvsdp725tg8qimbjde28kb.apps.googleusercontent.com
+    client-secret: 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
+    redirect-uri: http://localhost:4200/auth/callback
+    scopes: openid,profile,email,https://www.googleapis.com/auth/calendar.readonly,https://www.googleapis.com/auth/calendar.events
