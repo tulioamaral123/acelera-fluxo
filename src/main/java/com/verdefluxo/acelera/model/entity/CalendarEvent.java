@@ -47,4 +47,8 @@ public class CalendarEvent {
 
     @Column(nullable = false)
     private LocalDateTime syncedAt;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "ticket_padrao_id")
+    private TicketPadraoHoras ticketPadrao;
 }

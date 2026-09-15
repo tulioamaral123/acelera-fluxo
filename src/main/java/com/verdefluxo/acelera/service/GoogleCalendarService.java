@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.verdefluxo.acelera.model.dto.CalendarEventDTO;
 import com.verdefluxo.acelera.model.entity.CalendarEvent;
+import com.verdefluxo.acelera.model.entity.TicketPadraoHoras;
 import com.verdefluxo.acelera.model.entity.User;
 import com.verdefluxo.acelera.model.entity.UserApiSettings;
 import com.verdefluxo.acelera.repository.CalendarEventRepository;
@@ -178,6 +179,7 @@ public class GoogleCalendarService {
     }
 
     private CalendarEventDTO toDTO(CalendarEvent entity) {
+        TicketPadraoHoras ticket = entity.getTicketPadrao();
         return new CalendarEventDTO(
                 entity.getGoogleEventId(),
                 entity.getTitle(),
@@ -185,7 +187,10 @@ public class GoogleCalendarService {
                 entity.getStartTime(),
                 entity.getEndTime(),
                 entity.isAllDay(),
-                entity.getColorHex()
+                entity.getColorHex(),
+                ticket != null ? ticket.getId()        : null,
+                ticket != null ? ticket.getNome()      : null,
+                ticket != null ? ticket.getTicketKey() : null
         );
     }
 
@@ -196,7 +201,7 @@ public class GoogleCalendarService {
         String colorHex = event.colorId() != null ? COLOR_MAP.getOrDefault(event.colorId(), "#164e3d") : "#164e3d";
 
         if (event.start().date() != null) {
-            return new CalendarEventDTO(event.id(), title, event.start().date(), null, null, true, colorHex);
+            return new CalendarEventDTO(event.id(), title, event.start().date(), null, null, true, colorHex, null, null, null);
         }
 
         OffsetDateTime start = OffsetDateTime.parse(event.start().dateTime());
@@ -208,7 +213,7 @@ public class GoogleCalendarService {
                 start.toLocalDate().toString(),
                 start.format(DateTimeFormatter.ofPattern("HH:mm")),
                 end.format(DateTimeFormatter.ofPattern("HH:mm")),
-                false, colorHex
+                false, colorHex, null, null, null
         );
     }
 
