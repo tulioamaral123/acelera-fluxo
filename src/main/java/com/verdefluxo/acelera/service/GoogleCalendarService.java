@@ -49,17 +49,23 @@ public class GoogleCalendarService {
             Map.entry("10", "#0B8043"), Map.entry("11", "#D50000")
     );
 
+    private static final org.slf4j.Logger log = org.slf4j.LoggerFactory.getLogger(GoogleCalendarService.class);
+
     @Transactional
     public List<CalendarEventDTO> getEventsForWeek(LocalDate weekStart, LocalDate weekEnd) {
         User user = getCurrentUser();
+        log.debug("[Calendar] getEventsForWeek para {} de {} a {}", user.getEmail(), weekStart, weekEnd);
 
         List<CalendarEvent> cached = calendarEventRepository
                 .findByUserAndDateBetweenOrderByDateAscStartTimeAsc(user, weekStart, weekEnd);
+        log.debug("[Calendar] {} eventos em cache", cached.size());
 
         if (isCacheFresh(cached)) {
+            log.debug("[Calendar] cache fresco — retornando do banco");
             return cached.stream().map(this::toDTO).toList();
         }
 
+        log.debug("[Calendar] cache stale — sincronizando com Google");
         return syncFromGoogle(user, weekStart, weekEnd);
     }
 
