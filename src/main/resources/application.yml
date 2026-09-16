@@ -34,3 +34,7 @@ google:
     client-secret: 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
     redirect-uri: http://localhost:4200/auth/callback
     scopes: openid,profile,email,https://www.googleapis.com/auth/calendar.readonly,https://www.googleapis.com/auth/calendar.events
+
+atlassian:
+  oauth:
+    redirect-uri: http://localhost:4200/atlassian/callback

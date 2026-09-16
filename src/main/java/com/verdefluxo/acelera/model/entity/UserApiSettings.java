@@ -3,6 +3,8 @@ package com.verdefluxo.acelera.model.entity;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.time.LocalDateTime;
+
 @Entity
 @Table(name = "user_api_settings")
 @Getter
@@ -34,4 +36,17 @@ public class UserApiSettings {
     private String googleClientSecret;
     private String googleCalendarId;
     private String googleRefreshToken;
+
+    // Atlassian OAuth 2.0 (3LO)
+    private String atlassianClientId;
+    private String atlassianClientSecret;
+    @Column(length = 2048) private String atlassianAccessToken;
+    @Column(length = 1024) private String atlassianRefreshToken;
+    private String atlassianCloudId;
+    private LocalDateTime atlassianTokenExpiry;
+    private String atlassianEmail;
+
+    // Default Jira board/project
+    private Long defaultBoardId;
+    private String defaultBoardName;
 }

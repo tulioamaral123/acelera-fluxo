@@ -20,7 +20,7 @@ public class SettingsService {
         User user = getCurrentUser();
         return settingsRepository.findByUser(user)
                 .map(this::toDTO)
-                .orElse(new UserSettingsDTO(null, null, null, null, null, null, null, null, null, null));
+                .orElse(new UserSettingsDTO());
     }
 
     public UserSettingsDTO saveSettings(UserSettingsDTO dto) {
@@ -28,16 +28,21 @@ public class SettingsService {
         UserApiSettings settings = settingsRepository.findByUser(user)
                 .orElse(UserApiSettings.builder().user(user).build());
 
-        settings.setJiraDomain(dto.jiraDomain());
-        settings.setJiraEmail(dto.jiraEmail());
-        settings.setJiraToken(dto.jiraToken());
-        settings.setBitbucketWorkspace(dto.bitbucketWorkspace());
-        settings.setBitbucketToken(dto.bitbucketToken());
-        settings.setPontoApiKey(dto.pontoApiKey());
-        settings.setGoogleClientId(dto.googleClientId());
-        settings.setGoogleClientSecret(dto.googleClientSecret());
-        settings.setGoogleCalendarId(dto.googleCalendarId());
-        settings.setGoogleRefreshToken(dto.googleRefreshToken());
+        settings.setJiraDomain(dto.getJiraDomain());
+        settings.setJiraEmail(dto.getJiraEmail());
+        settings.setJiraToken(dto.getJiraToken());
+        settings.setBitbucketWorkspace(dto.getBitbucketWorkspace());
+        settings.setBitbucketToken(dto.getBitbucketToken());
+        settings.setPontoApiKey(dto.getPontoApiKey());
+        settings.setGoogleClientId(dto.getGoogleClientId());
+        settings.setGoogleClientSecret(dto.getGoogleClientSecret());
+        settings.setGoogleCalendarId(dto.getGoogleCalendarId());
+        settings.setGoogleRefreshToken(dto.getGoogleRefreshToken());
+        // Only persist clientId/secret — never overwrite OAuth tokens from this endpoint
+        settings.setAtlassianClientId(dto.getAtlassianClientId());
+        settings.setAtlassianClientSecret(dto.getAtlassianClientSecret());
+        settings.setDefaultBoardId(dto.getDefaultBoardId());
+        settings.setDefaultBoardName(dto.getDefaultBoardName());
 
         return toDTO(settingsRepository.save(settings));
     }
@@ -49,11 +54,23 @@ public class SettingsService {
     }
 
     private UserSettingsDTO toDTO(UserApiSettings s) {
-        return new UserSettingsDTO(
-                s.getJiraDomain(), s.getJiraEmail(), s.getJiraToken(),
-                s.getBitbucketWorkspace(), s.getBitbucketToken(), s.getPontoApiKey(),
-                s.getGoogleClientId(), s.getGoogleClientSecret(),
-                s.getGoogleCalendarId(), s.getGoogleRefreshToken()
-        );
+        return UserSettingsDTO.builder()
+                .jiraDomain(s.getJiraDomain())
+                .jiraEmail(s.getJiraEmail())
+                .jiraToken(s.getJiraToken())
+                .bitbucketWorkspace(s.getBitbucketWorkspace())
+                .bitbucketToken(s.getBitbucketToken())
+                .pontoApiKey(s.getPontoApiKey())
+                .googleClientId(s.getGoogleClientId())
+                .googleClientSecret(s.getGoogleClientSecret())
+                .googleCalendarId(s.getGoogleCalendarId())
+                .googleRefreshToken(s.getGoogleRefreshToken())
+                .atlassianClientId(s.getAtlassianClientId())
+                .atlassianClientSecret(s.getAtlassianClientSecret())
+                .atlassianConnected(s.getAtlassianAccessToken() != null)
+                .atlassianEmail(s.getAtlassianEmail())
+                .defaultBoardId(s.getDefaultBoardId())
+                .defaultBoardName(s.getDefaultBoardName())
+                .build();
     }
 }

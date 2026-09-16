@@ -14,9 +14,21 @@ public class JiraController {
 
     private final JiraService jiraService;
 
+    @GetMapping("/boards")
+    public ResponseEntity<Map<String, Object>> getBoards() {
+        return ResponseEntity.ok(jiraService.getBoards());
+    }
+
+    @GetMapping("/sprints")
+    public ResponseEntity<Map<String, Object>> getSprints(
+            @RequestParam String boardId) {
+        return ResponseEntity.ok(jiraService.getSprints(boardId));
+    }
+
     @GetMapping("/tickets")
-    public ResponseEntity<Map<String, Object>> getWeeklyTickets() {
-        return ResponseEntity.ok(jiraService.getWeeklyTickets());
+    public ResponseEntity<Map<String, Object>> getTickets(
+            @RequestParam(required = false) String sprintId) {
+        return ResponseEntity.ok(jiraService.getTickets(sprintId));
     }
 
     @PostMapping("/tickets/{issueKey}/worklog")
@@ -25,9 +37,10 @@ public class JiraController {
             @RequestBody Map<String, String> body) {
         String timeSpent = body.get("timeSpent");
         String comment   = body.get("comment");
+        String started   = body.get("started");
         if (timeSpent == null || timeSpent.isBlank()) {
             return ResponseEntity.badRequest().body(Map.of("message", "timeSpent é obrigatório (ex: 1h 30m)"));
         }
-        return ResponseEntity.ok(jiraService.logWork(issueKey, timeSpent, comment));
+        return ResponseEntity.ok(jiraService.logWork(issueKey, timeSpent, comment, started));
     }
 }
