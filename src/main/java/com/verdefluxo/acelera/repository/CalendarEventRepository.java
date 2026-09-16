@@ -20,6 +20,22 @@ public interface CalendarEventRepository extends JpaRepository<CalendarEvent, Lo
 
     Page<CalendarEvent> findByUserOrderByDateDescStartTimeDesc(User user, Pageable pageable);
 
+    @Query("SELECT e FROM CalendarEvent e WHERE e.user = :user " +
+           "AND (:hasFrom = false OR e.date >= :from) " +
+           "AND (:hasTo   = false OR e.date <= :to) " +
+           "AND (:showAll = true  OR e.ticketPadrao IS NULL) " +
+           "AND (:hasSearch = false OR LOWER(e.title) LIKE LOWER(CONCAT('%', :search, '%'))) " +
+           "ORDER BY e.date DESC, e.startTime DESC NULLS LAST")
+    Page<CalendarEvent> findWithFilters(@Param("user") User user,
+                                        @Param("from") LocalDate from,
+                                        @Param("to") LocalDate to,
+                                        @Param("hasFrom") boolean hasFrom,
+                                        @Param("hasTo") boolean hasTo,
+                                        @Param("showAll") boolean showAll,
+                                        @Param("hasSearch") boolean hasSearch,
+                                        @Param("search") String search,
+                                        Pageable pageable);
+
     Optional<CalendarEvent> findByGoogleEventIdAndUser(String googleEventId, User user);
 
     @Modifying(clearAutomatically = true, flushAutomatically = true)

@@ -13,6 +13,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Map;
 
 @Service
 @RequiredArgsConstructor
@@ -76,6 +77,19 @@ public class TicketPadraoHorasService {
             event.setTicketPadrao(ticket);
         }
         calendarEventRepository.save(event);
+    }
+
+    /** Vincula o mesmo ticket a múltiplos eventos de uma vez. ticketId == null remove o vínculo. */
+    @Transactional
+    public void vincularLote(List<String> googleEventIds, Long ticketId) {
+        User user = getCurrentUser();
+        TicketPadraoHoras ticket = ticketId != null
+                ? ticketRepository.findByIdAndUser(ticketId, user).orElse(null)
+                : null;
+        for (String eventId : googleEventIds) {
+            calendarEventRepository.findByGoogleEventIdAndUser(eventId, user)
+                    .ifPresent(e -> { e.setTicketPadrao(ticket); calendarEventRepository.save(e); });
+        }
     }
 
     private TicketPadraoHorasDTO toDTO(TicketPadraoHoras t) {

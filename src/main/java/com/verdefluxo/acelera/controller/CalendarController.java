@@ -34,8 +34,12 @@ public class CalendarController {
 
     @GetMapping("/list")
     public ResponseEntity<Page<CalendarEventDTO>> listAll(
-            @RequestParam(defaultValue = "0")  int page,
-            @RequestParam(defaultValue = "10") int size) {
-        return ResponseEntity.ok(calendarService.listAll(page, size));
+            @RequestParam(defaultValue = "0")   int page,
+            @RequestParam(defaultValue = "10")  int size,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate from,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate to,
+            @RequestParam(defaultValue = "false") boolean showAll,
+            @RequestParam(required = false) String search) {
+        return ResponseEntity.ok(calendarService.listAll(page, size, from, to, showAll, search));
     }
 }

@@ -76,11 +76,16 @@ public class GoogleCalendarService {
     }
 
     @Transactional(readOnly = true)
-    public Page<CalendarEventDTO> listAll(int page, int size) {
+    public Page<CalendarEventDTO> listAll(int page, int size, LocalDate from, LocalDate to, boolean showAll, String search) {
         int clampedSize = Math.min(Math.max(size, 1), 100);
         User user = getCurrentUser();
+        LocalDate effectiveFrom = from != null ? from : LocalDate.of(1900, 1, 1);
+        LocalDate effectiveTo   = to   != null ? to   : LocalDate.of(9999, 12, 31);
+        boolean hasSearch = search != null && !search.isBlank();
+        String effectiveSearch = hasSearch ? search.trim() : "";
         return calendarEventRepository
-                .findByUserOrderByDateDescStartTimeDesc(user, PageRequest.of(page, clampedSize))
+                .findWithFilters(user, effectiveFrom, effectiveTo, from != null, to != null, showAll,
+                        hasSearch, effectiveSearch, PageRequest.of(page, clampedSize))
                 .map(this::toDTO);
     }
 
@@ -140,16 +145,34 @@ public class GoogleCalendarService {
     }
 
     private void persistEvents(User user, LocalDate from, LocalDate to, List<GoogleEvent> items) {
-        calendarEventRepository.deleteByUserAndDateBetween(user, from, to);
+        // Index existing events by googleEventId to preserve ticket links
+        Map<String, CalendarEvent> existing = calendarEventRepository
+                .findByUserAndDateBetweenOrderByDateAscStartTimeAsc(user, from, to)
+                .stream()
+                .collect(java.util.stream.Collectors.toMap(CalendarEvent::getGoogleEventId, e -> e));
 
         LocalDateTime now = LocalDateTime.now();
+        List<CalendarEvent> toSave = new java.util.ArrayList<>();
+        java.util.Set<String> incomingIds = new java.util.HashSet<>();
 
-        List<CalendarEvent> entities = items.stream()
-                .map(event -> toEntity(event, user, now))
-                .filter(Objects::nonNull)
-                .toList();
+        for (GoogleEvent event : items) {
+            CalendarEvent entity = toEntity(event, user, now);
+            if (entity == null) continue;
+            incomingIds.add(event.id());
+            CalendarEvent old = existing.get(event.id());
+            if (old != null) {
+                entity.setId(old.getId());
+                entity.setTicketPadrao(old.getTicketPadrao()); // preserve ticket link
+            }
+            toSave.add(entity);
+        }
 
-        calendarEventRepository.saveAll(entities);
+        // Delete events that no longer exist in Google Calendar
+        existing.values().stream()
+                .filter(e -> !incomingIds.contains(e.getGoogleEventId()))
+                .forEach(calendarEventRepository::delete);
+
+        calendarEventRepository.saveAll(toSave);
     }
 
     private CalendarEvent toEntity(GoogleEvent event, User user, LocalDateTime syncedAt) {

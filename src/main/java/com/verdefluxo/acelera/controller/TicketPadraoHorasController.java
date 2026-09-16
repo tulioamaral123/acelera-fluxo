@@ -45,4 +45,15 @@ public class TicketPadraoHorasController {
         service.vincularAoEvento(googleEventId, body.get("ticketId"));
         return ResponseEntity.noContent().build();
     }
+
+    /** Vincula o mesmo ticket a múltiplos eventos. Body: { "eventIds": [...], "ticketId": 1 } */
+    @PatchMapping("/vincular-lote")
+    public ResponseEntity<Void> vincularLote(@RequestBody Map<String, Object> body) {
+        @SuppressWarnings("unchecked")
+        List<String> eventIds = (List<String>) body.get("eventIds");
+        Long ticketId = body.get("ticketId") != null
+                ? Long.valueOf(body.get("ticketId").toString()) : null;
+        service.vincularLote(eventIds, ticketId);
+        return ResponseEntity.noContent().build();
+    }
 }
